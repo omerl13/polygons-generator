@@ -1,11 +1,8 @@
+import { FormatterMapper, PolygonFormat } from "./formatters/mapper";
+
 const RAD_TO_DEG = 180 / Math.PI;
 const R_EARTH_KM = 6371;
 const MAX_POINTS = 360;
-
-enum PolygonFormat {
-  Raw,
-  GeoJSON,
-}
 
 type Options = {
   format?: PolygonFormat;
@@ -13,28 +10,12 @@ type Options = {
 };
 
 class PolygonGenerator {
-  #format: Options["format"];
+  #format: PolygonFormat;
   #customFormatter: Options["customFormatter"];
 
   constructor({ format, customFormatter }: Options) {
-    this.#format = format;
+    this.#format = format ?? PolygonFormat.Raw;
     this.#customFormatter = customFormatter;
-  }
-
-  #toGeoJson(points: number[][]) {
-    return {
-      type: "FeatureCollection",
-      features: [
-        {
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "Polygon",
-            coordinates: [points],
-          },
-        },
-      ],
-    };
   }
 
   generate(lat: number, lon: number, radius: number, pointsNum = 10): unknown {
@@ -60,9 +41,8 @@ class PolygonGenerator {
     if (this.#customFormatter) {
       return this.#customFormatter(results);
     }
-    return this.#format === PolygonFormat.GeoJSON
-      ? this.#toGeoJson(results)
-      : results;
+
+    return FormatterMapper.getFormatter(this.#format).format(results);
   }
 
   #tunedRandomize(radius: number, pointsNum: number): (x: number) => number {
@@ -77,7 +57,4 @@ class PolygonGenerator {
   }
 }
 
-export = {
-  PolygonGenerator,
-  PolygonFormat,
-};
+export { PolygonGenerator, PolygonFormat };
