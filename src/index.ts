@@ -6,15 +6,18 @@ const MAX_POINTS = 360;
 
 type Options = {
   format?: PolygonFormat;
+  randomize?: boolean;
   customFormatter?: (points: number[][]) => unknown;
 };
 
 class PolygonGenerator {
   #format: PolygonFormat;
+  #randomize: boolean;
   #customFormatter: Options["customFormatter"];
 
-  constructor({ format, customFormatter }: Options) {
+  constructor({ format, customFormatter, randomize }: Options) {
     this.#format = format ?? PolygonFormat.Raw;
+    this.#randomize = randomize ?? true;
     this.#customFormatter = customFormatter;
   }
 
@@ -22,7 +25,9 @@ class PolygonGenerator {
     const cLat = (radius / R_EARTH_KM) * RAD_TO_DEG;
     const cLng = cLat * Math.cos(lat / RAD_TO_DEG);
     const latCorrection = 1 - Math.abs(lat / 90);
-    const randomize = this.#tunedRandomize(radius, pointsNum);
+    const transform = this.#randomize
+      ? this.#tunedRandomize(radius, pointsNum)
+      : (x: number) => x;
 
     const points = [];
 
@@ -31,7 +36,7 @@ class PolygonGenerator {
 
       const circleX = lon + cLng * Math.cos(theta);
       const circleY = lat + latCorrection * cLat * Math.sin(theta);
-      points.push([randomize(circleX), randomize(circleY)]);
+      points.push([transform(circleX), transform(circleY)]);
     }
     points.push(points[0]);
     return this.#formatResults(points);
