@@ -1,8 +1,8 @@
 import { FormatterMapper, PolygonFormat } from "./formatters/mapper";
 
 const RAD_TO_DEG = 180 / Math.PI;
+const DEG_TO_RAD = Math.PI / 180;
 const R_EARTH_KM = 6371;
-const MAX_POINTS = 360;
 
 type Options = {
   format?: PolygonFormat;
@@ -22,21 +22,25 @@ class PolygonGenerator {
   }
 
   generate(lat: number, lon: number, radius: number, pointsNum = 10): unknown {
-    const cLat = (radius / R_EARTH_KM) * RAD_TO_DEG;
-    const cLng = cLat * Math.cos(lat / RAD_TO_DEG);
-    const latCorrection = 1 - Math.abs(lat / 90);
+    const latRad = lat * DEG_TO_RAD;
+    const lonRad = lon * DEG_TO_RAD;
+    const radiusToEarth = radius / R_EARTH_KM;
+    const sinRadius = Math.sin(radiusToEarth);
+    const cosRadius = Math.cos(radiusToEarth);
+    const sinLat = Math.sin(latRad);
+    const cosLat = Math.cos(latRad);
+
     const transform = this.#randomize
       ? this.#tunedRandomize(radius, pointsNum)
       : (x: number) => x;
 
     const points = [];
 
-    for (let i = 0; i < MAX_POINTS; i += MAX_POINTS / pointsNum) {
-      const theta = Math.PI * (i / (MAX_POINTS / 2));
-
-      const circleX = lon + cLng * Math.cos(theta);
-      const circleY = lat + latCorrection * cLat * Math.sin(theta);
-      points.push([transform(circleX), transform(circleY)]);
+    for (let i = 0; i < pointsNum; i++) {
+      const bearing = DEG_TO_RAD + (2 * Math.PI * -i) / pointsNum;
+      const newLat = Math.asin(sinLat * cosRadius + cosLat * sinRadius * Math.cos(bearing));
+      const newLon = lonRad + Math.atan2(Math.sin(bearing) * sinRadius * cosLat, cosRadius - sinLat * Math.sin(newLat));
+      points.push([transform(newLon * RAD_TO_DEG), transform(newLat * RAD_TO_DEG)]);
     }
     points.push(points[0]);
     return this.#formatResults(points);
