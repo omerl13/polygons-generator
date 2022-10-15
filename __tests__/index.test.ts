@@ -24,7 +24,7 @@ describe("PolygonGenerator", () => {
     const result1 = generator.generate(lat, lon, 1, 30);
     const result2 = generator.generate(lat, lon, 1, 30);
 
-    expect(result1).toEqual(result2);
+    expect(result1).not.toEqual(result2);
   });
 
   it("Formats the results according to customeFormatter if provided", () => {
