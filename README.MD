@@ -1,4 +1,5 @@
 # Polygons Generator
+Generate polygons around a point
 
 ### Options
 
@@ -20,7 +21,7 @@ const polygonGenerator = new PolygonGenerator({
 const lat = 51.46298;
 const lon = -0.05939;
 const radiusKm = 1;
-const numberOfPoints = 5;
+const numberOfPoints = 10;
 const res = polygonGenerator.generate(lat, lon, radiusKm, numberOfPoints);
 console.log(JSON.stringify(res, null, 2));
 ```
