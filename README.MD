@@ -1,4 +1,6 @@
 # Polygons Generator
+[![npm](https://img.shields.io/npm/v/polygons-generator)](https://www.npmjs.com/package/polygons-generator)
+
 Generate polygons around a point
 
 ### Options
